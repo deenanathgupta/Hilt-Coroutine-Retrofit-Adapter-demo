@@ -1,9 +1,11 @@
 package com.android.hilt_coroutine_retrofit_adapter_demo.viewmodel
 
-import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.hilt_coroutine_retrofit_adapter_demo.di.RepositoryModule
+import com.android.hilt_coroutine_retrofit_adapter_demo.model.AlbumResponseModelItem
 import com.android.hilt_coroutine_retrofit_adapter_demo.network.onError
 import com.android.hilt_coroutine_retrofit_adapter_demo.network.onException
 import com.android.hilt_coroutine_retrofit_adapter_demo.network.onSuccess
@@ -14,18 +16,29 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AlbumViewModel @Inject constructor(private val repository: AlbumRepository, @RepositoryModule.IoDispatcher private val ioDispatcher: CoroutineDispatcher): ViewModel() {
+class AlbumViewModel @Inject constructor(
+    private val repository: AlbumRepository,
+    @RepositoryModule.IoDispatcher private val ioDispatcher: CoroutineDispatcher
+) : ViewModel() {
+    private var _albumList = MutableLiveData<List<AlbumResponseModelItem>>()
+    val albumList: LiveData<List<AlbumResponseModelItem>>
+        get() = _albumList
+
+    private var _isErrorHappen = MutableLiveData<Boolean>()
+    val isErrorHappen: LiveData<Boolean>
+        get() = _isErrorHappen
+
     fun getAlbumList() {
         viewModelScope.launch(ioDispatcher) {
             val response = repository.getAlbumList()
             response.onSuccess {
-                Log.d("DEENA", "onSuccess:${it.size} ")
+                _albumList.postValue(it)
             }
             response.onError { _, _ ->
-                Log.d("DEENA", "onError: ")
+                _isErrorHappen.postValue(true)
             }
             response.onException {
-                Log.d("DEENA", "onException: ")
+                _isErrorHappen.postValue(true)
             }
         }
     }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Hilt-Coroutine-Retrofit-Adapter-demo</string>
+    <string name="fetching_album_data">Fetching Album data</string>
 </resources>
